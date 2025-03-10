@@ -1,12 +1,50 @@
+<<<<<<< HEAD
 import React from "react";
 import MTable from "../components/m-table";
 
 const ManageUser = () => {
+=======
+import React, { useState, useEffect } from "react";
+import MTable from "../components/m-table";
+import { message, Spin } from "antd";
+import { UserService } from "../services/user.service";
+
+const ManageUser = () => {
+  const [dataUser, setDataUser] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const asyncDataUser = async () => {
+    try {
+      setIsLoading(true);
+      const response = await UserService.getAllUsers();
+      setDataUser(response);
+    } catch (error) {
+      message.error("Lỗi xảy ra khi tải dữ liệu");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  const handleDelete = async (userId) => {
+    try {
+      setIsLoading(true);
+      await UserService.deleteUser(userId);
+      asyncDataUser();
+      message.success("Xóa thành công");
+    } catch (error) {
+      message.error("Lỗi hệ thống khi xóa");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  useEffect(() => {
+    asyncDataUser();
+  }, []);
+>>>>>>> 844e217 (Fix AdminPage)
   const columns = [
     {
       title: "Họ và Tên",
       dataIndex: "name",
       key: "name",
+<<<<<<< HEAD
       sorter: (a, b) => a.name.localeCompare(b.name),
     },
     {
@@ -45,6 +83,19 @@ const ManageUser = () => {
       title: "Ngày Tham Gia",
       dataIndex: "joinDate",
       key: "joinDate",
+=======
+    },
+    {
+      title: "Email",
+      dataIndex: "email",
+      key: "email",
+    },
+
+    {
+      title: "Ngày Tham Gia",
+      dataIndex: "createdAt",
+      key: "createdAt",
+>>>>>>> 844e217 (Fix AdminPage)
     },
     {
       title: "Hành động",
@@ -52,7 +103,11 @@ const ManageUser = () => {
       key: "action",
       render: (_, record) => (
         <div style={{ display: "flex", gap: "5px" }}>
+<<<<<<< HEAD
           <button
+=======
+          {/* <button
+>>>>>>> 844e217 (Fix AdminPage)
             style={{
               background: "#d4a118",
               color: "white",
@@ -62,7 +117,11 @@ const ManageUser = () => {
             }}
           >
             🚫 Cấm
+<<<<<<< HEAD
           </button>
+=======
+          </button> */}
+>>>>>>> 844e217 (Fix AdminPage)
           <button
             style={{
               background: "#d63031",
@@ -71,6 +130,10 @@ const ManageUser = () => {
               padding: "5px 10px",
               borderRadius: "5px",
             }}
+<<<<<<< HEAD
+=======
+            onClick={() => handleDelete(record._id)}
+>>>>>>> 844e217 (Fix AdminPage)
           >
             🗑️ Xóa
           </button>
@@ -78,6 +141,7 @@ const ManageUser = () => {
       ),
     },
   ];
+<<<<<<< HEAD
   const data = [
     {
       key: "1",
@@ -163,13 +227,23 @@ const ManageUser = () => {
 
   return (
     <div>
+=======
+  return (
+    <Spin spinning={isLoading}>
+>>>>>>> 844e217 (Fix AdminPage)
       <MTable
         isSearch={true}
         headerName={"Người dùng"}
         columns={columns}
+<<<<<<< HEAD
         data={data}
       />
     </div>
+=======
+        data={dataUser}
+      />
+    </Spin>
+>>>>>>> 844e217 (Fix AdminPage)
   );
 };
 
