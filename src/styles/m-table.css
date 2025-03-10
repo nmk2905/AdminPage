@@ -1,0 +1,38 @@
+.search-header-table {
+  display: flex;
+  align-items: center;
+  padding: 12px;
+  width: 100%;
+  background-color: white;
+  box-shadow: 1px 1px 1px 1px rgb(223, 223, 223);
+  margin-bottom: 5%;
+}
+
+.name-search {
+  width: 10%;
+
+  font-size: 16px;
+  font-weight: bold;
+  margin-right: 10%;
+}
+
+.search-input {
+  position: relative;
+  width: 70%;
+}
+
+.search-input input {
+  width: 50%;
+  outline: none;
+  border: none;
+  border: 1px solid lightgray;
+  border-radius: 12px;
+  padding: 12px 50px;
+}
+
+.search-input .icon-search {
+  font-size: 16px;
+  position: absolute;
+  top: 32%;
+  left: 2%;
+}
