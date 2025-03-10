@@ -62,6 +62,7 @@ const AdminLayout = () => {
       label: "Bảng điều khiển",
     },
     {
+<<<<<<< HEAD
       key: "/users",
       icon: <UserOutlined />,
       label: "Người dùng",
@@ -69,6 +70,15 @@ const AdminLayout = () => {
         { key: "/users/list", label: "Người dùng" },
         { key: "/users/info", label: "Thông tin người dùng" },
       ],
+=======
+      key: "/users/list",
+      icon: <UserOutlined />,
+      label: "Người dùng",
+      // children: [
+      //   { key: "/users/list", label: "Người dùng" },
+      //   { key: "/users/info", label: "Thông tin người dùng" },
+      // ],
+>>>>>>> 844e217 (Fix AdminPage)
     },
     {
       key: "/moderators",

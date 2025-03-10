@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import React from "react";
 import MTable from "../components/m-table";
 
@@ -7,6 +8,48 @@ const ManagePosts = () => {
       title: "Người Dùng",
       dataIndex: "user",
       key: "user",
+=======
+import React, { useEffect, useState } from "react";
+import MTable from "../components/m-table";
+import { message, Spin, Tag } from "antd";
+import { PostService } from "../services/post.service";
+
+const ManagePosts = () => {
+  const [dataPosts, setDataPosts] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const asyncDataUser = async () => {
+    try {
+      setIsLoading(true);
+      const response = await PostService.getAllPosts();
+      setDataPosts(response);
+    } catch (error) {
+      message.error("Lỗi xảy ra khi tải dữ liệu");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  const handleDelete = async (postId) => {
+    try {
+      setIsLoading(true);
+      await PostService.deletePost(postId);
+      asyncDataUser();
+      message.success("Xóa thành công");
+    } catch (error) {
+      message.error("Lỗi hệ thống khi xóa");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  useEffect(() => {
+    asyncDataUser();
+  }, []);
+  const columns = [
+    {
+      title: "Người Dùng",
+      dataIndex: "author",
+      key: "author",
+      render: (item) => <p>{item?.name}</p>,
+>>>>>>> 844e217 (Fix AdminPage)
     },
     {
       title: "Nội Dung",
@@ -15,8 +58,24 @@ const ManagePosts = () => {
     },
     {
       title: "Nhóm Gia Đình",
+<<<<<<< HEAD
       dataIndex: "group",
       key: "group",
+=======
+      dataIndex: "family",
+      key: "family",
+      render: (item) => <p>{item?.name}</p>,
+    },
+    {
+      title: "Trạng thái",
+      dataIndex: "isPrivate",
+      key: "isPrivate",
+      render: (item) => (
+        <Tag color={item ? "success" : "error"}>
+          {item ? "Private" : "Public"}
+        </Tag>
+      ),
+>>>>>>> 844e217 (Fix AdminPage)
     },
     {
       title: "Phê Duyệt",
@@ -24,7 +83,11 @@ const ManagePosts = () => {
       render: (_, record) => (
         <>
           <div style={{ display: "flex", gap: "5px" }}>
+<<<<<<< HEAD
             <button
+=======
+            {/* <button
+>>>>>>> 844e217 (Fix AdminPage)
               style={{
                 background: "#d4a118",
                 color: "white",
@@ -34,7 +97,11 @@ const ManagePosts = () => {
               }}
             >
               📄 Duyệt
+<<<<<<< HEAD
             </button>
+=======
+            </button> */}
+>>>>>>> 844e217 (Fix AdminPage)
             <button
               style={{
                 background: "#d63031",
@@ -43,6 +110,10 @@ const ManagePosts = () => {
                 padding: "5px 10px",
                 borderRadius: "5px",
               }}
+<<<<<<< HEAD
+=======
+              onClick={() => handleDelete(record.postId)}
+>>>>>>> 844e217 (Fix AdminPage)
             >
               🗑️ Xóa
             </button>
@@ -51,6 +122,7 @@ const ManagePosts = () => {
       ),
     },
   ];
+<<<<<<< HEAD
   const data = [
     {
       key: "1",
@@ -110,11 +182,17 @@ const ManagePosts = () => {
 
   return (
     <>
+=======
+
+  return (
+    <Spin spinning={isLoading}>
+>>>>>>> 844e217 (Fix AdminPage)
       <div style={{ marginBottom: 30 }}>
         <h2>Quản lý bài đăng</h2>
         <small>Kiểm duyệt nội dung cho bài đăng</small>
       </div>
       <MTable
+<<<<<<< HEAD
         noteAlert={
           "Nội dung phải hợp lệ , kiểm duyệt thật kĩ nội dung trước khi phê duyệt."
         }
@@ -123,6 +201,14 @@ const ManagePosts = () => {
         data={data}
       />
     </>
+=======
+        noteAlert={"Nội dung phải hợp lệ , kiểm duyệt thật kĩ nội dung."}
+        isAlert={true}
+        columns={columns}
+        data={dataPosts}
+      />
+    </Spin>
+>>>>>>> 844e217 (Fix AdminPage)
   );
 };
 
