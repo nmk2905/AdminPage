@@ -1,15 +1,8 @@
-<<<<<<< HEAD
-import React from "react";
-import { Alert, Table } from "antd";
-import { SearchOutlined } from "@ant-design/icons";
-import "../styles/m-table.css";
-=======
 import React, { useState } from "react";
 import { Alert, Table } from "antd";
 import { SearchOutlined } from "@ant-design/icons";
 import "../styles/m-table.css";
 
->>>>>>> 844e217 (Fix AdminPage)
 const MTable = ({
   noteAlert,
   isAlert,
@@ -18,8 +11,6 @@ const MTable = ({
   columns,
   data,
 }) => {
-<<<<<<< HEAD
-=======
   const [searchText, setSearchText] = useState("");
 
   const isMatch = (item, keyword) => {
@@ -31,7 +22,6 @@ const MTable = ({
   // Lọc data
   const filteredData = data.filter((item) => isMatch(item, searchText));
 
->>>>>>> 844e217 (Fix AdminPage)
   return (
     <>
       {isSearch && (
@@ -39,12 +29,6 @@ const MTable = ({
           <span className="name-search">{headerName}</span>
           <div className="search-input">
             <SearchOutlined className="icon-search" />
-<<<<<<< HEAD
-            <input />
-          </div>
-        </div>
-      )}
-=======
             <input
               type="text"
               placeholder="Tìm kiếm..."
@@ -55,7 +39,6 @@ const MTable = ({
         </div>
       )}
 
->>>>>>> 844e217 (Fix AdminPage)
       {isAlert && (
         <Alert
           style={{ marginBottom: 50 }}
@@ -65,11 +48,7 @@ const MTable = ({
         />
       )}
 
-<<<<<<< HEAD
-      <Table columns={columns} dataSource={data} />
-=======
       <Table columns={columns} dataSource={filteredData} rowKey="_id" />
->>>>>>> 844e217 (Fix AdminPage)
     </>
   );
 };
