@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { 
-  Table, Button, Modal, Form, Input, InputNumber, Select, message, 
+  Button, Modal, Form, Input, InputNumber, Select, message, 
   Card, Divider, Row, Col, Tag, Typography, Spin, Empty, 
   Space, Avatar, Tooltip, Badge, Dropdown, Menu
 } from "antd";
@@ -18,6 +18,8 @@ const ManagePackages = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [editingPackage, setEditingPackage] = useState(null);
   const [form] = Form.useForm();
+  // State mới để theo dõi trạng thái loading của các thao tác cụ thể
+  const [updatingFeatures, setUpdatingFeatures] = useState(false);
 
   const server_url = "https://platform-family.onrender.com";
 
@@ -41,10 +43,21 @@ const ManagePackages = () => {
     try {
       setLoading(true);
       const response = await fetch(`${server_url}/package/get-all`);
+      
+      // Xử lý khi response không OK
+      if (!response.ok) {
+        throw new Error(`Server responded with status: ${response.status}`);
+      }
+      
       const result = await response.json();
       
       if (result.ok && result.data) {
-        setPackages(result.data);
+        // Đảm bảo mỗi package có thuộc tính features là một mảng
+        const formattedPackages = result.data.map(pkg => ({
+          ...pkg,
+          features: Array.isArray(pkg.features) ? pkg.features : []
+        }));
+        setPackages(formattedPackages);
       } else {
         message.error("Không thể tải dữ liệu gói dịch vụ");
       }
@@ -56,40 +69,82 @@ const ManagePackages = () => {
     }
   };
 
-  const handleUpdatePackageFeatures = async (packageId, features, type = 'add') => {
+  const addFeatureToPackage = async (packageId, featureId) => {
     try {
-      setLoading(true);
+      setUpdatingFeatures(true);
+      
+      // Tạo payload theo định dạng yêu cầu
+      const payload = {
+        type: "add",
+        packageId: packageId,
+        features: [featureId]
+      };
+      
+      console.log("Sending Add Feature Request:", payload);
+      
       const response = await fetch(`${server_url}/package/permission`, {
-        method: 'POST',
+        method: 'PUT', // Sửa từ POST thành PUT
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          type,  // 'add' or 'remove'
-          packageId,
-          features
-        }),
+        body: JSON.stringify(payload),
       });
       
-      const result = await response.json();
+      const responseData = await response.json();
+      console.log("Add Feature Response:", responseData);
       
-      if (result.ok || result.statusCode === 200) {
-        message.success(
-          type === 'add' 
-            ? "Thêm tính năng thành công" 
-            : "Xóa tính năng thành công"
-        );
-        fetchPackages();
+      if (responseData.ok || responseData.statusCode === 200) {
+        message.success(`Đã thêm tính năng thành công!`);
+        await fetchPackages(); // Đợi fetchPackages hoàn tất
       } else {
-        message.error(result.message || "Thao tác không thành công");
+        message.error(responseData.message || "Thêm tính năng thất bại");
       }
     } catch (error) {
-      console.error("Lỗi cập nhật tính năng:", error);
-      message.error("Lỗi kết nối đến máy chủ");
+      console.error("Lỗi khi thêm tính năng:", error);
+      message.error(`Lỗi: ${error.message || "Không thể kết nối đến server"}`);
     } finally {
-      setLoading(false);
+      setUpdatingFeatures(false);
     }
   };
+
+  const removeFeatureFromPackage = async (packageId, featureId) => {
+    try {
+      setUpdatingFeatures(true);
+      
+      // Create payload with type "remove"
+      const payload = {
+        type: "remove",
+        packageId: packageId,
+        features: [featureId]
+      };
+      
+      console.log("Sending Remove Feature Request:", payload);
+      
+      const response = await fetch(`${server_url}/package/permission`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+      
+      const responseData = await response.json();
+      console.log("Remove Feature Response:", responseData);
+      
+      if (responseData.ok || responseData.statusCode === 200) {
+        message.success(`Đã xóa tính năng thành công!`);
+        await fetchPackages(); // Refresh package list
+      } else {
+        message.error(responseData.message || "Xóa tính năng thất bại");
+      }
+    } catch (error) {
+      console.error("Lỗi khi xóa tính năng:", error);
+      message.error(`Lỗi: ${error.message || "Không thể kết nối đến server"}`);
+    } finally {
+      setUpdatingFeatures(false);
+    }
+  };
+  
 
   const handleSubmitPackage = async (values) => {
     try {
@@ -173,60 +228,94 @@ const ManagePackages = () => {
     return 'gold';
   };
 
+  // Component để thêm tính năng cho gói - sửa lại để gọi API chính xác
+  const renderAddFeatureDropdown = (packageItem) => {
+    // Lọc ra các tính năng chưa có trong gói
+    const availableFeatures = featuresList.filter(
+      feature => !packageItem.features || !packageItem.features.includes(feature.id)
+    );
+    
+    // Tạo các menu item cho dropdown
+    const menuItems = availableFeatures.map(feature => ({
+      key: feature.id,
+      label: (
+        <span>
+          {feature.icon} {feature.name}
+        </span>
+      ),
+      onClick: () => addFeatureToPackage(packageItem._id, feature.id)
+    }));
+    
+    // Nếu không còn tính năng nào để thêm
+    if (menuItems.length === 0) {
+      menuItems.push({
+        key: 'no-features',
+        label: 'Đã thêm tất cả tính năng',
+        disabled: true
+      });
+    }
+    
+    return (
+      <Dropdown 
+        menu={{ items: menuItems }} 
+        trigger={['click']} 
+        disabled={updatingFeatures}
+      >
+        <Button icon={<PlusOutlined />} loading={updatingFeatures}>
+          Thêm Tính Năng
+        </Button>
+      </Dropdown>
+    );
+  };
+
+  // Tạm thời giữ nguyên phần xóa tính năng để tập trung vào sửa phần thêm trước
+  const renderRemoveFeatureDropdown = (packageItem) => {
+    // Ensure features is an array
+    const features = Array.isArray(packageItem.features) ? packageItem.features : [];
+    
+    // Create menu items for each feature that can be removed
+    const menuItems = features.map(featureId => {
+      const feature = featuresList.find(f => f.id === featureId);
+      return {
+        key: featureId,
+        label: (
+          <span>
+            {feature ? feature.icon : "⭐"} {getFeatureName(featureId)}
+          </span>
+        ),
+        onClick: () => removeFeatureFromPackage(packageItem._id, featureId)
+      };
+    });
+    
+    // If no features to remove
+    if (menuItems.length === 0) {
+      menuItems.push({
+        key: 'no-features',
+        label: 'Không có tính năng để xóa',
+        disabled: true
+      });
+    }
+    
+    return (
+      <Dropdown 
+        menu={{ items: menuItems }} 
+        trigger={['click']} 
+        disabled={updatingFeatures || features.length === 0}
+      >
+        <Button icon={<MinusOutlined />} loading={updatingFeatures} danger>
+          Xóa Tính Năng
+        </Button>
+      </Dropdown>
+    );
+  };
+
   const renderFeatureManagement = (packageItem) => {
     return (
       <div style={{ marginTop: 16 }}>
         <Text strong>Quản Lý Tính Năng:</Text>
-        <Space>
-          <Dropdown
-            overlay={
-              <Menu>
-                {featuresList
-                  .filter(feature => 
-                    !packageItem.features.includes(feature.id)
-                  )
-                  .map(feature => (
-                    <Menu.Item 
-                      key={feature.id}
-                      onClick={() => handleUpdatePackageFeatures(
-                        packageItem._id, 
-                        [feature.id], 
-                        'add'
-                      )}
-                    >
-                      {feature.icon} {feature.name}
-                    </Menu.Item>
-                  ))
-                }
-              </Menu>
-            }
-          >
-            <Button icon={<PlusOutlined />}>Thêm Tính Năng</Button>
-          </Dropdown>
-          
-          <Dropdown
-            overlay={
-              <Menu>
-                {packageItem.features.map(featureId => {
-                  const feature = featuresList.find(f => f.id === featureId);
-                  return feature ? (
-                    <Menu.Item 
-                      key={featureId}
-                      onClick={() => handleUpdatePackageFeatures(
-                        packageItem._id, 
-                        [featureId], 
-                        'remove'
-                      )}
-                    >
-                      {feature.icon} {feature.name}
-                    </Menu.Item>
-                  ) : null;
-                })}
-              </Menu>
-            }
-          >
-            <Button icon={<MinusOutlined />}>Xóa Tính Năng</Button>
-          </Dropdown>
+        <Space style={{ marginTop: 8 }}>
+          {renderAddFeatureDropdown(packageItem)}
+          {renderRemoveFeatureDropdown(packageItem)}
         </Space>
       </div>
     );
@@ -237,6 +326,9 @@ const ManagePackages = () => {
     const packageTier = 
       packageItem.price <= 100000 ? 'Cơ bản' : 
       packageItem.price <= 300000 ? 'Nâng cao' : 'Cao cấp';
+    
+    // Đảm bảo packageItem.features luôn là một mảng
+    const features = Array.isArray(packageItem.features) ? packageItem.features : [];
       
     return (
       <Col xs={24} sm={12} lg={8} xl={6} key={packageItem._id}>
@@ -290,14 +382,18 @@ const ManagePackages = () => {
             <div>
               <Text strong>Tính năng bao gồm:</Text>
               <ul style={{ padding: '8px 0 0 20px', margin: 0 }}>
-                {packageItem.features.map(featureId => (
-                  <li key={featureId} style={{ marginBottom: 8, listStyleType: 'none', position: 'relative' }}>
-                    <Space>
-                      <Text style={{ marginRight: 8 }}>{getFeatureIcon(featureId)}</Text>
-                      <Text>{getFeatureName(featureId)}</Text>
-                    </Space>
-                  </li>
-                ))}
+                {features.length > 0 ? (
+                  features.map(featureId => (
+                    <li key={featureId} style={{ marginBottom: 8, listStyleType: 'none', position: 'relative' }}>
+                      <Space>
+                        <Text style={{ marginRight: 8 }}>{getFeatureIcon(featureId)}</Text>
+                        <Text>{getFeatureName(featureId)}</Text>
+                      </Space>
+                    </li>
+                  ))
+                ) : (
+                  <li><Text type="secondary">Chưa có tính năng nào</Text></li>
+                )}
               </ul>
             </div>
 
