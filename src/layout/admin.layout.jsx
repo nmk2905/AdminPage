@@ -117,7 +117,7 @@ const AdminLayout = () => {
       <Layout>
         <Sider trigger={null} collapsible collapsed={collapsed}>
           <img
-            src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSZUVfAZrtjQJtxOE3nYH3frJAcgD384bY8KA&s"
+            src="https://i.postimg.cc/VNnMmfC8/nest.png"
             className="demo-logo-vertical"
           />
           <Menu

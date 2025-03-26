@@ -1,5 +1,8 @@
 .demo-logo-vertical {
-  width: 100%;
+  width: 35%; /* Giảm xuống còn 50% chiều rộng sidebar */
   height: auto;
-  object-fit: cover;
+  max-height: 100px; /* Giảm chiều cao tối đa */
+  object-fit: contain;
+  display: block;
+  margin: 10px auto; /* Giảm khoảng cách xung quanh */
 }
